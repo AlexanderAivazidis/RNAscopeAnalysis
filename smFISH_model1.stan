@@ -7,10 +7,10 @@ int<lower=0> countsR[C,G];
 real<lower=0> prior[K];
 }
 
-// parameters {
+//parameters {
 // vector<lower = 0>[G] eta;
 // //real<lower = 0> alpha;
-// }
+//}
 
 transformed parameters {
 matrix[K,C] lp;

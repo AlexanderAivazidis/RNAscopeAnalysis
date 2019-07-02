@@ -1,7 +1,13 @@
-accuracyMetrics = function(fit, classes, meanExprR){
+accuracyMetrics = function(fit, classes, meanExprR, prior, subset = NA){
+  if (is.na(subset)){
+    subset = 1:length(classes)
+  }
+  
+  classes = classes[subset]
+  
   # Extract probability for each cell type and maxProp predictions
   list_of_draws <- extract(fit)
-  k_prob = lapply(1:dim(list_of_draws[['lp']])[3], function(x) colMeans(exp(list_of_draws[['lp']][,,x])))
+  k_prob = lapply(subset, function(x) colMeans(exp(list_of_draws[['lp']][,,x])))
   k_matrix = matrix(0,length(k_prob), length(k_prob[[1]]))
   colnames(k_matrix) = rownames(meanExprR)
   predictions = rep('',length(k_prob))
@@ -15,6 +21,10 @@ accuracyMetrics = function(fit, classes, meanExprR){
     predictions[i] = names(k_prob[[i]])[length(k_prob[[i]])]
     predictions_Confidence[i] = k_prob[[i]][length(k_prob[[i]])]
   }
+  
+  # Compare predictions to random choice:
+  predicted_correct = sum(predictions == classes)/length(subset)
+  random_correct = mean(unlist(lapply(1:100000, function(x) sum(sample(rownames(meanExprR),length(subset), replace = TRUE, prob = prior) == classes)/length(subset))))
   
   true_classes = matrix(0,C,K)
   colnames(true_classes) = rownames(meanExprR)
@@ -35,10 +45,15 @@ accuracyMetrics = function(fit, classes, meanExprR){
   }
   
   # Get accuracy as function of cell class:
-  tab = table(classes[predictions == classes])/length(predictions)
-  accuracy_cellClass = 
-  
-  return(k_matrix)
+  tab1 = table(classes[predictions == classes])
+  tab2 = table(classes)
+  tab1new = tab2
+  tab1new[names(tab1)] = tab1
+  tab1new[!names(tab1new) %in% names(tab1)] = 0
+  tab1 = tab1new[names(tab2)]
+  accuracy_cellClass = unlist(lapply(1:length(tab1), function(x) tab1[x]/tab2[x]))
+
+  return(list(k_matrix, predicted_correct, random_correct, accuracy_cellClass))
 }
 
 plotAccuracyVsConfidence = function(){
