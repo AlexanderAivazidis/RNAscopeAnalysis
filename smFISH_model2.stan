@@ -7,17 +7,17 @@ int<lower=0> countsR[C,G];
 real<lower=0> prior[K];
 }
 
-// parameters {
-// vector<lower = 0>[G] eta;
-// //real<lower = 0> alpha;
-// }
+parameters {
+vector<lower = 0>[G] eta;
+//real<lower = 0> alpha;
+}
 
 transformed parameters {
 matrix[K,C] lp;
 for (k in 1:K){
 {
 for (c in 1:C){
-lp[k,c] = prior[k] + neg_binomial_2_lpmf(countsR[c]| meanExprR[k],2);
+lp[k,c] = prior[k] + neg_binomial_2_lpmf(countsR[c]| meanExprR[k]*eta,2);
 }
 }
 }
@@ -25,9 +25,10 @@ lp[k,c] = prior[k] + neg_binomial_2_lpmf(countsR[c]| meanExprR[k],2);
 
 model {
 // sensitivity prior
-//alpha ~ gamma(10,2);
-//eta ~ gamma(alpha, 10);
-//eta ~ gamma(2, 1);
+#alpha ~ gamma(10,10);
+for (g in 1:G){
+  eta[g] ~ gamma(10, 10);
+}
 // add to the log density
 target += log_sum_exp(to_vector(lp));
 }
