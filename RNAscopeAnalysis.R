@@ -7,7 +7,7 @@ accuracyMetrics = function(fit, classes, meanExprR, prior, subset = NA){
   C = length(classes)
   K = dim(meanExprR)[1]
   
-  # Extract probability for each cell type and maxProp predictions
+  # Extract probability for each cell type and maxProp predictions:
   list_of_draws <- extract(fit)
   k_prob = lapply(subset, function(x) colMeans(exp(list_of_draws[['lp']][,,x])))
   k_matrix = matrix(0,length(k_prob), length(k_prob[[1]]))
