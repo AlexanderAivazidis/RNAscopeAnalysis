@@ -7,7 +7,6 @@ output:
 ```{r include = FALSE}
 ### Load data and packages
 knitr::opts_chunk$set(fig.width=12, fig.height=8) 
-
 ```
 
 ```{r, include = FALSE, message = FALSE, warning = FALSE, cache = FALSE}
@@ -42,7 +41,7 @@ names(classes) = colnames(counts)
 keep = (classes %in% c('GABAergic', 'Endothelial', 'Glutamatergic', 'Non-Neuronal'))
 classes = classes[keep]
 specific_type = specific_type[keep]
-counts = counts[RNAscopeGenes1,keep]
+counts = counts[,keep]
 classes[specific_type == 'Astro'] = 'Astro'
 classes[specific_type == 'Endo'] = 'Endo'
 classes[specific_type == 'Macrophage'] = 'Macrophage'
@@ -105,7 +104,7 @@ prior = prior[rownames(meanExprR)]
 C = dim(countsR)[1]
 K = dim(meanExprR)[1]
 G = dim(countsR)[2]
-eta_prior_params = c(100,100)
+eta_prior_params = c(50, 50)
 
 stan_rdump(c('prior', 'countsR','meanExprR', 'C', 'K', 'G', 'eta_prior_params'), file = "trial1_model2_data.txt", append = FALSE)
 trial1_model2_data <- read_rdump("trial1_model2_data.txt") 
@@ -115,16 +114,38 @@ fit1 <- stan(
   data = trial1_model2_data,         # named list of data
   chains = 4,            # number of Markov chains
   warmup = 1000,           # number of warmup iterations per chain
-  iter = 2000,             # total number of iterations per chain
+  iter = 1500,             # total number of iterations per chain
   cores = 4,             # number of cores (using 2 just for the vignette)
   refresh = 50,
   algorithm = "NUTS"
 )
 
+model = stan_model(file = '/home/jovyan/RNAscopeAnalysis/smFISH_model2.stan')
+fitVB = vb(model, data = trial1_model2_data)
+
+```
+
+```{r, include = TRUE, message = FALSE, warning = FALSE, cache = FALSE}
+
 ### Analyse the results:
 fit_summary <- summary(fit1)
-metrics = accuracyMetrics(fit1, classes, meanExprR, prior, subset = 1:n1)
+metrics = accuracyMetrics(fit1, classes, meanExprR, prior)
 posterior = as.matrix(fit1)
+
+library("bayesplot")
+library("rstanarm")
+library("ggplot2")
+
+plot_title <- ggtitle("Posterior distributions of efficiency",
+                      "with medians and 80% intervals")
+mcmc_areas(posterior[,1:4],
+           pars = c("eta[1]", "eta[2]", "eta[3]", "eta[4]"),
+           prob = 0.8) + plot_title
+
+
+fit_summaryVB <- summary(fitVB)
+metricsVB = accuracyMetrics(fitVB, classes, meanExprR, prior)
+posteriorVB = as.matrix(fitVB)
 
 library("bayesplot")
 library("rstanarm")
