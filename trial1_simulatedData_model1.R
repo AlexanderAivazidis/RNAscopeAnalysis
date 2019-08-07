@@ -35,7 +35,7 @@ meanExpr = do.call("cbind", tapply(names(classes), classes, function(x) rowMeans
 
 set.seed(999) # Random number seed
 n1 = 10000 # Number of cells to simulate
-eta = c(0.5,1,1.5,1)
+eta = c(0.5,1,2,1)
 size = c(2,2,2,2)
 names(eta) = names(size) = RNAscopeGenes1
 
@@ -70,7 +70,7 @@ fit1 <- stan(
   iter = 10000,             # total number of iterations per chain
   cores = 4,             # number of cores (using 2 just for the vignette)
   refresh = 50,
-  algorithm = "Fixed_param"
+  algorithm = "NUTS"
 )
 
 ### Analyse the results:

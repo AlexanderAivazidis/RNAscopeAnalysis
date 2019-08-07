@@ -9,16 +9,18 @@ vector<lower=0>[2] eta_prior_params;
 }
 
 parameters {
-row_vector<lower = 0>[G] eta;
+real<lower = 0> eta;
 //real<lower = 0> alpha;
 }
 
 transformed parameters {
 matrix[K,C] lp;
+row_vector<lower=0>[G] meanExprT[K];
 for (k in 1:K){
 {
+meanExprT[k] = meanExprR[k] * eta;
 for (c in 1:C){
-lp[k,c] = log(prior[k]) + neg_binomial_2_lpmf(countsR[c]| meanExprR[k] .* eta,2);
+lp[k,c] = log(prior[k]) + neg_binomial_2_lpmf(countsR[c] | meanExprT[k],50);
 }
 }
 }

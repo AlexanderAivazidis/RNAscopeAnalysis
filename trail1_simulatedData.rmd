@@ -53,9 +53,9 @@ counts = counts[RNAscopeGenes1,keep]
 meanExpr = do.call("cbind", tapply(names(classes), classes, function(x) rowMeans(counts[RNAscopeGenes1,x])))
 
 set.seed(999) # Random number seed
-n1 = 10000 # Number of cells to simulate
-eta = c(0.8,0.9,1.1,1.2)
-size = c(2,2,2,2)
+n1 = 1000 # Number of cells to simulate
+eta = c(2,2,2,2)
+size = c(50,50,50,50)
 names(eta) = names(size) = RNAscopeGenes1
 
 # RNAscope data:
@@ -104,7 +104,7 @@ prior = prior[rownames(meanExprR)]
 C = dim(countsR)[1]
 K = dim(meanExprR)[1]
 G = dim(countsR)[2]
-eta_prior_params = c(50, 50)
+eta_prior_params = c(15, 10)
 
 stan_rdump(c('prior', 'countsR','meanExprR', 'C', 'K', 'G', 'eta_prior_params'), file = "trial1_model2_data.txt", append = FALSE)
 trial1_model2_data <- read_rdump("trial1_model2_data.txt") 
@@ -142,7 +142,6 @@ mcmc_areas(posterior[,1:4],
            pars = c("eta[1]", "eta[2]", "eta[3]", "eta[4]"),
            prob = 0.8) + plot_title
 
-
 fit_summaryVB <- summary(fitVB)
 metricsVB = accuracyMetrics(fitVB, classes, meanExprR, prior)
 posteriorVB = as.matrix(fitVB)
@@ -159,6 +158,7 @@ mcmc_areas(posterior[,1:4],
 
 ```
 
+ 
 
 
 
